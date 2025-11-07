@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <porta>5555</porta>
+    <dbUrl>jdbc:mysql://localhost:3306/uni</dbUrl>
+    <dbUser>root</dbUser>
+    <dbPassword></dbPassword>
+    <poolSize>10</poolSize>
+</config>
