@@ -18,6 +18,7 @@ public class UniDAO {
     }
 
     public Utente registrazione(String username, String password, String matricola, String nome, String cognome, LocalDate dataNascita) throws SQLException {
+        Utente u = new Utente();
         return null;
     }
 

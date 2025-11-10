@@ -8,14 +8,16 @@ public class Persona {
     private final String nome;
     private final String cognome;
     private final LocalDate dataDiNascita;
+    private Long id;
 
-    public Persona(String nome, String cognome, LocalDate dataDiNascita) {
+    public Persona(String nome, String cognome, LocalDate dataDiNascita, Long id) {
         if (nome == null) throw new IllegalArgumentException("nome vuoto");
         if (cognome == null) throw new IllegalArgumentException("cognome vuoto");
         if (dataDiNascita == null) throw new IllegalArgumentException("data nulla");
         this.nome = nome;
         this.cognome = cognome;
         this.dataDiNascita = dataDiNascita;
+        this.id = id;
     }
 
     public String getNome() {
@@ -28,6 +30,13 @@ public class Persona {
 
     public LocalDate getDataDiNascita() {
         return this.dataDiNascita;
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Override
