@@ -25,7 +25,7 @@ public final class GestoreDB {
     public GestoreDB() {
     }
 
-    private static Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASS); // usa i valori del config
     }
 
