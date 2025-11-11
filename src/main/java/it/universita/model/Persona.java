@@ -4,10 +4,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class Persona {
-    private final String nome;
-    private final String cognome;
-    private final LocalDate dataDiNascita;
+public abstract class Persona {
+    String nome;
+    String cognome;
+    LocalDate dataDiNascita;
+
+    public Persona(){}
 
     public Persona(String nome, String cognome, LocalDate dataDiNascita) {
         if (nome == null) throw new IllegalArgumentException("nome vuoto");
@@ -18,20 +20,20 @@ public class Persona {
         this.dataDiNascita = dataDiNascita;
     }
 
-    public String getNome() {
+     public String getNome(){
         return this.nome;
     }
 
-    public String getCognome() {
+     public String getCognome() {
         return this.cognome;
     }
 
-    public LocalDate getDataDiNascita() {
+     public LocalDate getDataDiNascita() {
         return this.dataDiNascita;
     }
 
     @Override
-    public String toString() {
+     public String toString() {
         return "Persona{" +
                 "nome='" + nome + '\'' +
                 ", cognome='" + cognome + '\'' +
