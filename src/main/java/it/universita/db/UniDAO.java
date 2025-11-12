@@ -174,8 +174,43 @@ public class UniDAO {
         }
 
         //Libretto-esiti
-        public List<Esame> mostraLibretto ( long studenteId) throws SQLException {
-            return null;
+        public Libretto mostraLibretto(long idStudente) {
+            String sql =
+                    "SELECT e.id AS id_esame, e.id_prenotazione, e.id_professore, " +
+                            "CONCAT(pf.nome,' ',pf.cognome) AS docente, m.nome AS materia, " +
+                            "e.voto, e.lode, e.esito, e.data_registrazione " +
+                            "FROM esame e " +
+                            "JOIN prenotazione pr ON pr.id = e.id_prenotazione " +
+                            "JOIN appello a ON a.id = pr.id_appello " +
+                            "JOIN materia m ON m.id = a.id_materia " +
+                            "JOIN professore pf ON pf.id = e.id_professore " +
+                            "WHERE pr.id_studente = ? AND e.esito = 'SUPERATO' " +
+                            "ORDER BY e.data_registrazione DESC";
+
+            try (Connection cn = GestoreDB.getConnection();
+                 PreparedStatement ps = cn.prepareStatement(sql)) {
+
+                ps.setLong(1, idStudente);
+                try (ResultSet rs = ps.executeQuery()) {
+                    Libretto libretto= new Libretto();
+                    while (rs.next()) {
+                        Esame e = new Esame();
+                        e.setIdEsame(rs.getLong("id_esame"));
+                        e.setIdPrenotazione(rs.getLong("id_prenotazione"));
+                        e.setIdProfessore(rs.getLong("id_professore"));
+                        e.setDocente(rs.getString("docente"));
+                        e.setMateria(rs.getString("materia"));
+                        e.setVoto(rs.getInt("voto"));
+                        e.setLode(rs.getBoolean("lode"));
+                        e.setEsito(rs.getString("esito"));
+                        e.setDataRegistrazione(rs.getTimestamp("data_registrazione").toLocalDateTime());
+                        libretto.aggiungiEsameAlLibretto(e);
+                    }
+                    return libretto;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Errore mostraLibretto", e);
+            }
         }
 
         //Docente
@@ -194,8 +229,7 @@ public class UniDAO {
         public boolean chiudiAppello ( long appelloId) throws SQLException {
             return false;
         }
-
-        public static void main (String[]args){
+        /*public static void main (String[]args){
             UniDAO ud = new UniDAO();
             List<Appello> ap;
             List<Studente> lS;
@@ -214,6 +248,32 @@ public class UniDAO {
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
+            }
+        } */
+        public static void main(String[] args) {
+            UniDAO dao = new UniDAO();
+            long idStudente = 2; // <-- metti qui l'ID che vuoi provare
+
+            try {
+                Libretto libretto = dao.mostraLibretto(idStudente);
+
+                System.out.println("=== LIBRETTO (studente " + idStudente + ") ===");
+                System.out.println("Esami trovati: " + libretto.getEsami().size());
+                for (Esame e : libretto.getEsami()) {
+                    String voto = (e.getVoto() == null) ? "-" :
+                            ((e.isLode() && e.getVoto() == 30) ? "30L" : String.valueOf(e.getVoto()));
+                    String data = (e.getDataRegistrazione() == null) ? "-" : e.getDataRegistrazione().toString();
+
+                    System.out.println(
+                            e.getMateria() + " | " +
+                                    e.getDocente() + " | " +
+                                    e.getEsito() + " | " +
+                                    voto + " | " +
+                                    data
+                    );
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
 
