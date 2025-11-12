@@ -13,4 +13,17 @@ public class Utente extends Persona {
         this.username = username;
         this.ruolo = ruolo;
     }
+    public Utente(){}
+
+    public long getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getRuolo() {
+        return ruolo;
+    }
 }

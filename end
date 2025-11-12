@@ -1,0 +1,95 @@
+[33mcommit bf534d9079bc515565ea290bbf2d66ea7ca6de8d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: 03219fb c5f442b
+Author: maviliaerica <maviliaerica@gmail.com>
+Date:   Wed Nov 12 15:30:19 2025 +0100
+
+    Merge pull request #2 from Zaul-lab/restore/libretto-esame
+    
+    Aggiunta classe Libretto
+
+[33mcommit c5f442b9ddccb59719acd4029d0b0bb09c282e9b[m[33m ([m[1;31morigin/restore/libretto-esame[m[33m)[m
+Author: Erica Mavilia <ericamavilia@MacBook-Air-di-Erica.local>
+Date:   Wed Nov 12 13:11:49 2025 +0100
+
+    Aggiunta classe Libretto
+
+[33mcommit 03219fb714b52bcca67e1e5559b5da928090f241[m
+Merge: 9591f73 2583895
+Author: maviliaerica <maviliaerica@gmail.com>
+Date:   Wed Nov 12 13:34:07 2025 +0100
+
+    Merge pull request #1 from Zaul-lab/erica-modificato1
+    
+    Creazione PR
+
+[33mcommit 25838951dc3b8360f8cd8296d65211d1d1dc3774[m
+Author: Erica Mavilia <ericamavilia@MacBook-Air-di-Erica.local>
+Date:   Wed Nov 12 13:11:49 2025 +0100
+
+    Modifica Classe Libretto e Esame
+
+[33mcommit 605856527041033ebec3c73044010a4535561388[m
+Merge: 602dc2e 9591f73
+Author: Erica Mavilia <ericamavilia@MacBook-Air-di-Erica.local>
+Date:   Wed Nov 12 10:06:12 2025 +0100
+
+    Merge remote-tracking branch 'origin/main' into erica-modificato1
+    
+    # Conflicts:
+    #       src/main/java/it/universita/db/UniDAO.java
+    #       src/main/java/it/universita/model/Persona.java
+    #       src/main/java/it/universita/model/Utente.java
+
+[33mcommit 9591f7385926952c5932c58dc4a90debfafb0f0c[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Tue Nov 11 18:32:21 2025 +0100
+
+    creato il metodo registrazione
+
+[33mcommit 602dc2e8b7e8f28b65128630f060040448c85915[m
+Author: Erica Mavilia <ericamavilia@Mac.homenet.telecomitalia.it>
+Date:   Mon Nov 10 19:22:11 2025 +0100
+
+    Inserimento metodi registrazione e login in UniDAO (da rivedere)
+
+[33mcommit 458983150ba161917eb3d27b5354d6433badb876[m
+Author: Erica Mavilia <ericamavilia@Mac.homenet.telecomitalia.it>
+Date:   Mon Nov 10 17:45:15 2025 +0100
+
+    Inserimento id a Persona. Creazione e impostazione classe Utente
+
+[33mcommit e45868add3c08668f58b84297e00d839da932bb2[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Mon Nov 10 15:15:27 2025 +0100
+
+    Definito la classe Appello con metodi get/set e toString. Implementato il metodo di ricerca degli appelli Aperti
+
+[33mcommit 860c334e6e41d6f50ee858760d6ae13fec672b32[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Mon Nov 10 12:24:14 2025 +0100
+
+    Creato tutte le signature dei metodi da implementare nella classe UniDAO
+
+[33mcommit 7a74945a0f437ab6816a42262150787e523b6f6c[m[33m ([m[1;31morigin/ericabranch[m[33m)[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Mon Nov 10 01:28:21 2025 +0100
+
+    Ho creato la connessione con DB nella classe gestoreDB. Ho collegato il Driver di mariaDB(quello che usa XAMPP) ora funziona. Dobbiamo iniziare a fare i metodi UniDAO
+
+[33mcommit 4d917214787257f76cf0de203acf7d6fc8d8db18[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Sat Nov 8 00:19:44 2025 +0100
+
+    Ho creato la base delle calssi Persona e le sue derivate Studente e Professore; ho modificato il main facendo una bozza iniziale
+
+[33mcommit c9712f39c741f5ad85fa37fa4865b02b64cff8bc[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Fri Nov 7 23:18:18 2025 +0100
+
+    Ho fatto il mio primo commit, ho aggiunto la variabile d'istanza nome in persona e aggiornato i file di config
+
+[33mcommit d4e39257c88b93cd46a2c382d6a85af2dd573022[m
+Author: Zaul-lab <raulpetruzza@gmail.com>
+Date:   Fri Nov 7 17:35:43 2025 +0100
+
+    Prima versione progetto base
