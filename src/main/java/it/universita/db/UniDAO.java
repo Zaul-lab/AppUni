@@ -61,93 +61,111 @@ public class UniDAO {
     }
 
     //fatto
-    public Utente registrazione(String nome, String cognome, String dataDiNascita, String username, String password) throws SQLException {
-        long utenteId = 0;
-        final Ruolo ruolo = username.endsWith(".docente") ? Ruolo.PROFESSORE : Ruolo.STUDENTE;
-        LocalDate dataNascita = Persona.parseData(dataDiNascita);
-        //Verifica che username contenga .docente
-        String sqlUtente = "INSERT  INTO utente (username,password_hash,ruolo) VALUES (?,?,?)";
-        String sqlStudente = "INSERT INTO studente(id,nome, cognome, data_nascita) VALUES (?,?,?,?)";
-        String sqlProfessore = "INSERT INTO professore(id,nome, cognome, data_nascita) VALUES (?,?,?,?)";
-        String sqlCheck = "SELECT COUNT(*) FROM utente WHERE username = ?";
-        try (Connection cn = GestoreDB.getConnection(); PreparedStatement pscheck = cn.prepareStatement(sqlCheck)) {
+    public Utente registrazione(String nome, String cognome, String dataDiNascita,
+                                String candidato, String password) throws SQLException {
+        final String sqlUtente = "INSERT INTO utente (username, password_hash, ruolo) VALUES (?,?,?)";
+        final String sqlStudente = "INSERT INTO studente (id, nome, cognome, data_nascita) VALUES (?,?,?,?)";
+        final String sqlProf = "INSERT INTO professore (id, nome, cognome, data_nascita) VALUES (?,?,?,?)";
+
+        //base è il primo nome da provare per inserire l'utente
+        final String base = candidato == null ? "" : candidato.trim(); // (+ opzionale: .toLowerCase(Locale.ROOT))
+        final Ruolo ruolo = base.endsWith(".docente") ? Ruolo.PROFESSORE : Ruolo.STUDENTE;
+        final LocalDate dataNascita = Persona.parseData(dataDiNascita);
+
+        long utenteId = 0L;
+        String userEffettivo = null;
+
+
+        try (Connection cn = GestoreDB.getConnection()) {
             cn.setAutoCommit(false);
-            pscheck.setString(1, username);
-            try (ResultSet rs = pscheck.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    username = generaNuovoUsername(cn, username);
-                    System.out.println("username già esistente ho generato uno in automatico: " + username);
-                }
-            }
+            try {
+                final int MAX = 10;
+                boolean inserito = false;
+                //facciamo il for per gestire la race condition, se un altro thread nel frattempo voleva inserire lo stesso nome prima di lui
+                for (int i = 0; i <= MAX; i++) {
+                    //Se è la prima volta che siamo nel ciclo, username sarà base, quindi il primo nome da provare
+                    //ossia quello fornito dall'utente, al secondo ciclo andiamo a sommargli un numero e riproviamo l'inserimento
+                    String username = (i == 0) ? base : base + i;
+                    try (PreparedStatement ps = cn.prepareStatement(sqlUtente, Statement.RETURN_GENERATED_KEYS)) {
+                        ps.setString(1, username);
+                        ps.setString(2, hashPassword(password));
+                        ps.setString(3, ruolo.name());
+                        ps.executeUpdate();
 
-            try (PreparedStatement ps = cn.prepareStatement(sqlUtente, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, username);
-                ps.setString(2, hashPassword(password));
-                ps.setString(3, ruolo.name());
-                if (ps.executeUpdate() != 1) throw new SQLException("Inserimento utente non riuscito");
-
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (!rs.next()) throw new SQLException("Manca generated key utente");
-                    utenteId = rs.getLong(1);
-                }
+                        try (ResultSet rs = ps.getGeneratedKeys()) {
+                            if (!rs.next()) throw new SQLException("Manca generated key utente");
+                            utenteId = rs.getLong(1);
+                        }
+                        userEffettivo = username;
+                        inserito = true;
+                        break; //Inserimento utente riuscito usciamo dal ciclo
+                    } catch (SQLIntegrityConstraintViolationException dup) {
+                        System.out.println("Username esistente provo il prossimo ");
+                        // riprova col prossimo suffisso
+                        continue;
+                    }
+                }if (!inserito) throw new SQLException("Nessuno username disponibile vicino a " + base);
                 if (ruolo == Ruolo.PROFESSORE) {
-                    try (PreparedStatement psProf = cn.prepareStatement(sqlProfessore)) {
-                        psProf.setLong(1, utenteId);
-                        psProf.setString(2, nome);
-                        psProf.setString(3, cognome);
-                        psProf.setDate(4, Date.valueOf(dataNascita));
-                        if (psProf.executeUpdate()!= 1) throw new SQLException("Inserimento professore non riuscito");
+                    try (PreparedStatement ps = cn.prepareStatement(sqlProf)) {
+                        ps.setLong(1, utenteId);
+                        ps.setString(2, nome);
+                        ps.setString(3, cognome);
+                        ps.setDate(4, Date.valueOf(dataNascita));
+                        if (ps.executeUpdate() != 1) throw new SQLException("Inserimento professore non riuscito");
                     }
                 } else {
-                    try (PreparedStatement psStudente = cn.prepareStatement(sqlStudente)) {
-                        psStudente.setLong(1, utenteId);
-                        psStudente.setString(2, nome);
-                        psStudente.setString(3, cognome);
-                        psStudente.setDate(4, Date.valueOf(dataNascita));
-                        if (psStudente.executeUpdate() != 1) throw new SQLException("Inserimento studente non riuscito");
+                    try (PreparedStatement ps = cn.prepareStatement(sqlStudente)) {
+                        ps.setLong(1, utenteId);
+                        ps.setString(2, nome);
+                        ps.setString(3, cognome);
+                        ps.setDate(4, Date.valueOf(dataNascita));
+                        if (ps.executeUpdate() != 1) throw new SQLException("Inserimento studente non riuscito");
                     }
                 }
                 cn.commit();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 try {
                     cn.rollback();
                 } catch (SQLException sup) {
                     e.addSuppressed(sup);
                 }
                 throw e;
-            }finally {
-                cn.setAutoCommit(true);
+            } finally {
+                try {
+                    cn.setAutoCommit(true);
+                } catch (SQLException ignore) {
+                }
             }
         }
-            return new Utente(utenteId, username, ruolo.name());
+        return new Utente(utenteId, userEffettivo, ruolo.name());
     }
 
-        // Appelli in lettura
-        public List<Appello> listaAppelliAperti () throws SQLException {
-            List<Appello> listaAppelli = new ArrayList<>();
-            String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, posti_max AS postiMax, stato\n" +
-                    "FROM appello\n" +
-                    "WHERE stato = 'APERTO' AND data_esame >= NOW()\n" +
-                    "ORDER BY dataAppello ASC\n"; //ordino gli appelli per data
-            try (Connection cn = GestoreDB.getConnection();
-                 Statement st = cn.createStatement();
-                 ResultSet rs = st.executeQuery(sql)) {
-                while (rs.next()) {
-                    //creo un oggetto di tipo TimeStamp perchè nel Db abbiamo DATETIME come valore e con LocalData
-                    //andiamo a troncare l'orario altrimenti, quindi ci serve un oggetto di tipo LocalDateTime
-                    Timestamp ts = rs.getTimestamp("dataAppello");
-                    Appello app = new Appello(rs.getLong("id"), rs.getLong("materiaId"),
-                            rs.getLong("docenteId"), ts.toLocalDateTime(),
-                            rs.getString("aula"), rs.getInt("postiMax"), rs.getString("stato"));
-                    listaAppelli.add(app);
-                }
-
-            } catch (SQLException e) {
-                System.out.println("Problema di tipo SQLException");
-                e.printStackTrace();
+    // Appelli in lettura
+    public List<Appello> listaAppelliAperti() throws SQLException {
+        List<Appello> listaAppelli = new ArrayList<>();
+        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, posti_max AS postiMax, stato\n" +
+                "FROM appello\n" +
+                "WHERE stato = 'APERTO' AND data_esame >= NOW()\n" +
+                "ORDER BY dataAppello ASC\n"; //ordino gli appelli per data
+        try (Connection cn = GestoreDB.getConnection();
+             Statement st = cn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                //creo un oggetto di tipo TimeStamp perchè nel Db abbiamo DATETIME come valore e con LocalData
+                //andiamo a troncare l'orario altrimenti, quindi ci serve un oggetto di tipo LocalDateTime
+                Timestamp ts = rs.getTimestamp("dataAppello");
+                Appello app = new Appello(rs.getLong("id"), rs.getLong("materiaId"),
+                        rs.getLong("docenteId"), ts.toLocalDateTime(),
+                        rs.getString("aula"), rs.getString("stato"));
+                listaAppelli.add(app);
             }
-            return listaAppelli;
+
+        } catch (SQLException e) {
+            System.out.println("Problema di tipo SQLException");
+            e.printStackTrace();
         }
+        return listaAppelli;
+    }
 
     public List<Appello> listAppelliPerStudente(long studenteId) throws SQLException {
         List<Appello> appelliStudente;
@@ -167,7 +185,7 @@ public class UniDAO {
 
     public List<Appello> listAppelliPerDocenti(long docenteId) throws SQLException {
         List<Appello> appelliDocenti = new ArrayList<>();
-        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, posti_max AS postiMax, stato\n" +
+        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, stato\n" +
                 "FROM appello\n" +
                 "WHERE stato = 'APERTO' AND data_esame >= NOW() AND id_professore = ? \n" +
                 "ORDER BY dataAppello ASC\n";
@@ -182,7 +200,7 @@ public class UniDAO {
                     Timestamp ts = rs.getTimestamp("dataAppello");
                     Appello app = new Appello(rs.getLong("id"), rs.getLong("materiaId"),
                             rs.getLong("docenteId"), ts.toLocalDateTime(),
-                            rs.getString("aula"), rs.getInt("postiMax"), rs.getString("stato"));
+                            rs.getString("aula"), rs.getString("stato"));
                     appelliDocenti.add(app);
                 }
             }
@@ -199,9 +217,6 @@ public class UniDAO {
                 From prenotazione Inner Join studente ON prenotazione.id_studente = studente.id
                 Where id_appello= ? AND prenotazione.stato = 'PRENOTATO' Order by prenotazione.prenotato_il                
                 """;
-
-        //String sql = "Select studente.nome, studente.cognome, studente.matricola, studente.id, studente.data_nascita " + "From prenotazione Inner Join studente ON prenotazione.id_studente = studente.id " + "Where id_appello= ? AND prenotazione.stato = 'PRENOTATO' " + "Order by prenotazione.prenotato_il";
-
         try (Connection cn = GestoreDB.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setLong(1, appelloId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -306,10 +321,10 @@ public class UniDAO {
         }
     }
 
-        //Docente
-        public boolean inserisciVoto ( long appelloId, long studenteId, int Voto, boolean lode) throws SQLException {
-            return false;
-        }
+    //Docente
+    public boolean inserisciVoto(long appelloId, long studenteId, int Voto, boolean lode) throws SQLException {
+        return false;
+    }
 
 
     public boolean creaAppello(long materiaId, long professoreId, LocalDateTime dataEsame, String aula) throws SQLException {
@@ -353,7 +368,7 @@ public class UniDAO {
             if (ps.executeUpdate() == 1) {
                 System.out.println("Appello chiuso");
                 return true;
-            }else {
+            } else {
                 System.out.println("Chiusura non effettuata");
                 return false;
             }
@@ -381,26 +396,24 @@ public class UniDAO {
             e.printStackTrace();
         }
 
-        /*
-            UniDAO ud = new UniDAO();
-            List<Appello> ap;
-            List<Studente> lS;
-            long appelloId = 4;
+        List<Appello> ap;
+        List<Studente> lS;
+        long appelloId = 4;
 
-            try {
-                ap = ud.listaAppelliAperti();
-                for (Appello a : ap) {
-                    System.out.println(a);
-                }
-
-                System.out.println("mostra gli iscritti ad un appello: ");
-                lS = ud.listIscrittiAppello(appelloId);
-                for (Studente st : lS) {
-                    System.out.println(st);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+        try {
+            ap = ud.listaAppelliAperti();
+            for (Appello a : ap) {
+                System.out.println(a);
             }
-        }
 
+            System.out.println("mostra gli iscritti ad un appello: ");
+            lS = ud.listIscrittiAppello(appelloId);
+            for (Studente st : lS) {
+                System.out.println(st);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+}

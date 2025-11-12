@@ -5,17 +5,15 @@ import java.util.Objects;
 
 public class Appello {
     private long id, materiaId, docenteId;
-    private int postiMax;
     private LocalDateTime dataAppello;
     private String aula;
     private String stato;
 
-    public Appello(long id, long materiaId, long docenteId, LocalDateTime dataAppello, String aula,int postiMax, String stato) {
+    public Appello(long id, long materiaId, long docenteId, LocalDateTime dataAppello, String aula, String stato) {
         this.id = id;
         this.materiaId = materiaId;
         this.docenteId = docenteId;
         this.dataAppello = dataAppello;
-        this.postiMax = postiMax;
         this.aula = aula;
         this.stato = stato;
     }
@@ -68,14 +66,6 @@ public class Appello {
         this.stato = stato;
     }
 
-    public int getPostiMax() {
-        return postiMax;
-    }
-
-    public void setPostiMax(int postiMax) {
-        this.postiMax = postiMax;
-    }
-
     @Override
     public String toString() {
         return "Appello{" +
@@ -84,7 +74,6 @@ public class Appello {
                 ", docenteId=" + docenteId +
                 ", data=" + dataAppello +
                 ", aula=" + Objects.toString(aula, "—") +
-                ", postiMax=" + postiMax +
                 ", stato=" + stato +
                 '}';
     }
