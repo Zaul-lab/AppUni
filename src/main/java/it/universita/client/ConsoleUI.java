@@ -1,7 +1,6 @@
 package it.universita.client;
 
 import it.universita.model.Persona;
-import it.universita.model.Professore;
 
 import java.time.LocalDate;
 import java.util.Scanner;

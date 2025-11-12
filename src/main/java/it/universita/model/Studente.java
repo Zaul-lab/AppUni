@@ -2,7 +2,7 @@ package it.universita.model;
 
 import java.time.LocalDate;
 
-public class Studente extends Persona{
+public class Studente extends Persona {
 
     private String matricola;
 
