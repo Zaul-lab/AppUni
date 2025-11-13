@@ -43,10 +43,61 @@ public class ClientTCP {
 
     // ===== LOGIN / REGISTRAZIONE =====
     public Utente login(String username, String password) throws IOException{
-
+        JsonObject req= new JsonObject();
+        req.addProperty("action", "login");
+        req.addProperty("username", username);
+        req.addProperty("password", password);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if(!success){
+            //leggiamo messaggio di errore e lo gestiamo
+            if(res.has("messaggio")){
+                String messaggio= res.get("messaggio").getAsString();
+                System.out.println("Accesso fallito: " + messaggio);
+            }else{
+                System.out.println("Accesso fallito(errore sconosciuto)");
+            }
+            return null;
+        }
+        JsonObject utente = res.getAsJsonObject("utente");
+        if(utente == null){
+            //se ci sono errori lato server:
+            throw new IOException("Risposta server non valida");
+        }
+        Utente u = gson.fromJson(utente, Utente.class);
+        return u;
     }
-    public Utente registrazione(String nome, String cognome, String dataNascita, String candidatoUsername, String password) throws IOException{
 
+    public Utente registrazione(String nome, String cognome, String data_nascita, String username, String password) throws IOException{
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "registrazione");
+        req.addProperty("nome", nome);
+        req.addProperty("cognome", cognome);
+        req.addProperty("data_nascita", data_nascita);
+        req.addProperty("username", username);
+        req.addProperty("password", password);
+        //mandiamo la richiesta al server
+        JsonObject res = sendRequest(req);
+        //controllo se l'operazione è andata a buon fine
+        boolean success = res.get("success").getAsBoolean();
+        if(!success){
+            //leggiamo messaggio di errore e lo gestiamo
+            if(res.has("messaggio")){
+                String messaggio= res.get("messaggio").getAsString();
+                System.out.println("Registrazione fallita: " + messaggio);
+            }else{
+                System.out.println("Registrazione fallita(errore sconosciuto)");
+            }
+            return null;
+        }
+        //se tutto non ci sono errori, prendo l'oggetto utente dalla risposta:
+        JsonObject utente = res.getAsJsonObject("utente");
+        if(utente == null){
+            //se ci sono errori lato server:
+            throw new IOException("Risposta server non valida");
+        }
+        Utente u = gson.fromJson(utente, Utente.class);
+        return u;
     }
 
     // ===== APPELLI (LETTURA) =====
