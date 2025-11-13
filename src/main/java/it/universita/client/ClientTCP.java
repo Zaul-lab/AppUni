@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ClientTCP {
-    private String serverAdress = "localhost";
-    private int serverPort = 5555;
+    private String serverAdress;
+    private int serverPort;
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
