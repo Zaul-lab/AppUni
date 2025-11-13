@@ -207,37 +207,135 @@ public class ClientTCP {
 
     // ===== PRENOTAZIONI STUDENTE =====
     public boolean prenotazioneAppello(long appelloId, long studenteId) throws IOException {
-
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "prenotazioneAppello");
+        req.addProperty("appelloId", appelloId);
+        req.addProperty("studenteId", studenteId);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile effettuare la prenotazione: " + messaggio);
+            } else {
+                System.out.println("Impossibile effettuare la prenotazione(errore sconosciuto)");
+            }
+            return false;
+        }
+        return true;
     }
 
     public boolean cancellazionePrenotazioneAppello(long appelloId, long studenteId) throws IOException {
-
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "cancelPrenotazioneAppello");
+        req.addProperty("appelloId", appelloId);
+        req.addProperty("studenteId", studenteId);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile cancellare la prenotazione: " + messaggio);
+            } else {
+                System.out.println("Impossibile cancellare la prenotazione(errore sconosciuto)");
+            }
+            return false;
+        }
+        return true;
     }
 
-    public List<Studente> listaIscrittiAppello(long appelloId) throws IOException {
-
-    }
 
     // ===== LIBRETTO =====
     public Libretto mostraLibretto(long studenteId) throws IOException {
-
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "mostraLibretto");
+        req.addProperty("studenteId", studenteId);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile visualizzare il libretto: " + messaggio);
+            } else {
+                System.out.println("Impossibile visualizzare il libretto(errore sconosciuto)");
+            }
+            return null;
+        }
+        JsonObject libretto = res.getAsJsonObject("libretto");
+        if (libretto == null) {
+            //se ci sono errori lato server:
+            throw new IOException("Risposta server non valida");
+        }
+        Libretto l = gson.fromJson(libretto, Libretto.class);
+        return l;
     }
 
     // ===== FUNZIONI DOCENTE =====
-    public boolean creaAppello(long materiaId, long docenteId, LocalDateTime dataEsame, String aula) throws IOException {
+    public boolean creaAppello(long materiaId, long professoreId, LocalDateTime dataEsame, String aula) throws IOException {
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "creaAppello");
+        req.addProperty("materiaId", materiaId);
+        req.addProperty("professoreId", professoreId);
+        req.addProperty("dataEsame", dataEsame.toString());
+        req.addProperty("aula", aula);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile creare l'appello: " + messaggio);
+            } else {
+                System.out.println("Impossibile creare l'appello(errore sconosciuto)");
+            }
+            return false;
+        }
+        return true;
 
     }
 
     public boolean chiudiAppello(long appelloId) throws IOException {
-
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "chiudiAppello");
+        req.addProperty("appelloId", appelloId);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile chiudere l'appello: " + messaggio);
+            } else {
+                System.out.println("Impossibile chiudere l'appello(errore sconosciuto)");
+            }
+            return false;
+        }
+        return true;
     }
 
-    public boolean inserisciVoto(long appelloId, long studenteId, int voto, boolean lode) throws IOException {
-
-    }
-
-    // ===== MATERIE =====
-    public List<Materia> listaMaterie() throws IOException {
-
+    public boolean inserisciVoto(long prenotazioneId,long professoreId, long studenteId, int voto, boolean lode) throws IOException {
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "inserisciVoto");
+        req.addProperty("prenotazioneId", prenotazioneId);
+        req.addProperty("professoreId", professoreId);
+        req.addProperty("studenteId", studenteId);
+        req.addProperty("voto", voto);
+        req.addProperty("lode", lode);
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile inserire il voto: " + messaggio);
+            } else {
+                System.out.println("Impossibile inserire il voto(errore sconosciuto)");
+            }
+            return false;
+        }
+        return true;
     }
 }
