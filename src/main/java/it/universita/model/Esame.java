@@ -82,10 +82,6 @@ public class Esame {
 
     @Override
     public String toString() {
-     /*   String votoStr;
-        if (voto == null) votoStr = "-";
-        else votoStr = (lode && voto == 30) ? voto + "L" : String.valueOf(voto); */
-
         return "Libretto{" +
                 "idEsame=" + idEsame +
                 ", idPrenotazione=" + idPrenotazione +
@@ -97,5 +93,4 @@ public class Esame {
                 ", dataRegistrazione=" + dataRegistrazione +
                 '}';
     }
-
 }

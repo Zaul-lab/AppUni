@@ -443,7 +443,6 @@ public class UniDAO {
     }
 
     public static void main(String[] args) {
-
     }
 
 }

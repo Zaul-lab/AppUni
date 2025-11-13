@@ -40,7 +40,6 @@ public void setCodice(String codice) {
     this.codice = codice;
 }
 
-
 public int getCfu() {
     return cfu;
 }
