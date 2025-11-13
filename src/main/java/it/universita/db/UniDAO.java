@@ -16,25 +16,8 @@ public class UniDAO {
         return BCrypt.hashpw(password, BCrypt.gensalt(12));
     }
 
-    private String generaNuovoUsername(Connection cn, String base) throws SQLException {
-        String nuovo = base;
-        int i = 1;
-        String sqlCheck = "SELECT COUNT(*) FROM utente WHERE username = ?";
-        try (PreparedStatement ps = cn.prepareStatement(sqlCheck)) {
-            do {
-                nuovo = base + i;
-                ps.setString(1, nuovo);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getInt(1) == 0) break; // trovato username libero
-                }
-                i++;
-            } while (true);
-        }
-        return nuovo;
-    }
-
     //fatto
-    public Utente login(String nomeUtente, String password) throws SQLException {
+    public Utente login(String nomeUtente, String password) {
         long id;
         String sql = "SELECT id, username,password_hash,ruolo FROM utente WHERE username = ?";
         try (Connection cn = GestoreDB.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -55,14 +38,12 @@ public class UniDAO {
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("errore nel login",e);
         }
     }
 
     //fatto
-    public Utente registrazione(String nome, String cognome, String dataDiNascita,
-                                String candidato, String password) throws SQLException {
+    public Utente registrazione(String nome, String cognome, String dataDiNascita, String candidato, String password) throws SQLException {
         final String sqlUtente = "INSERT INTO utente (username, password_hash, ruolo) VALUES (?,?,?)";
         final String sqlStudente = "INSERT INTO studente (id, nome, cognome, data_nascita) VALUES (?,?,?,?)";
         final String sqlProf = "INSERT INTO professore (id, nome, cognome, data_nascita) VALUES (?,?,?,?)";
@@ -104,7 +85,8 @@ public class UniDAO {
                         // riprova col prossimo suffisso
                         continue;
                     }
-                }if (!inserito) throw new SQLException("Nessuno username disponibile vicino a " + base);
+                }
+                if (!inserito) throw new SQLException("Nessuno username disponibile vicino a " + base);
                 if (ruolo == Ruolo.PROFESSORE) {
                     try (PreparedStatement ps = cn.prepareStatement(sqlProf)) {
                         ps.setLong(1, utenteId);
@@ -141,9 +123,9 @@ public class UniDAO {
     }
 
     // Appelli in lettura
-    public List<Appello> listaAppelliAperti() throws SQLException {
+    public List<Appello> listaAppelliAperti() {
         List<Appello> listaAppelli = new ArrayList<>();
-        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, posti_max AS postiMax, stato\n" +
+        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, stato\n" +
                 "FROM appello\n" +
                 "WHERE stato = 'APERTO' AND data_esame >= NOW()\n" +
                 "ORDER BY dataAppello ASC\n"; //ordino gli appelli per data
@@ -167,23 +149,32 @@ public class UniDAO {
         return listaAppelli;
     }
 
-    public List<Appello> listAppelliPerStudente(long studenteId) throws SQLException {
-        List<Appello> appelliStudente;
-        String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, posti_max AS postiMax, stato\n" +
-                "FROM appello\n" +
-                "WHERE stato = 'APERTO' AND data_esame >= NOW() AND id_professore = ? \n" +
-                "ORDER BY dataAppello ASC\n";
-        try (Connection cn = GestoreDB.getConnection();
-             Statement st = cn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-        } catch (SQLException e) {
+    public List<Appello> listAppelliPrenotatiDaStudente(long studenteId) {
+        List<Appello> appelliStudente  = new ArrayList<>();
+        String sql = """
+                SELECT appello.id,appello.id_materia, appello.id_professore, appello.data_esame, appello.aula, appello.stato 
+                FROM appello JOIN prenotazione  
+                ON appello.id = prenotazione.id_appello WHERE prenotazione.id_studente = ? AND prenotazione.stato = 'PRENOTATO'
+                ORDER BY appello.data_esame ASC
+                """;
+        try(Connection cn = GestoreDB.getConnection();
+            PreparedStatement ps = cn.prepareStatement(sql)){
+            ps.setLong(1,studenteId);
+            try(ResultSet rs = ps.executeQuery()){
 
+                while(rs.next()){
+                    Timestamp ts = rs.getTimestamp("data_esame");
+                    Appello appello = new Appello(rs.getLong("id"),rs.getLong("id_materia"),rs.getLong("id_professore"),ts.toLocalDateTime(),rs.getString("aula"), rs.getString("stato"));
+                    appelliStudente.add(appello);
+                }
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
         }
-
-        return null;
+        return appelliStudente;
     }
 
-    public List<Appello> listAppelliPerDocenti(long docenteId) throws SQLException {
+    public List<Appello> listAppelliPerDocenti(long docenteId) {
         List<Appello> appelliDocenti = new ArrayList<>();
         String sql = "SELECT id, id_materia AS materiaId, id_professore AS docenteId, data_esame AS dataAppello, aula, stato\n" +
                 "FROM appello\n" +
@@ -205,6 +196,7 @@ public class UniDAO {
                 }
             }
         } catch (SQLException e) {
+            e.printStackTrace();
         }
         return appelliDocenti;
     }
@@ -243,6 +235,7 @@ public class UniDAO {
              PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setLong(1, appelloId);
             ps.setLong(2, studenteId);
+            ps.setLong(3,appelloId);
             int i = ps.executeUpdate();
             if (i == 1) {
                 System.out.println("Prenotazione avvenuta con successo");
@@ -258,7 +251,7 @@ public class UniDAO {
     }
 
     //Utilizzato da studente FATTO
-    public boolean cancellazionePrenotazioneAppello(long appelloId, long studenteId) throws SQLException {
+    public boolean cancellazionePrenotazioneAppello(long appelloId, long studenteId) {
         String sql = """
                 UPDATE prenotazione 
                 SET stato = 'CANCELLATO'
@@ -276,8 +269,7 @@ public class UniDAO {
                 return false;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Errore nella cancellazione della prenotazione",e);
         }
     }
 
@@ -321,9 +313,82 @@ public class UniDAO {
         }
     }
 
-    //Docente
-    public boolean inserisciVoto(long appelloId, long studenteId, int Voto, boolean lode) throws SQLException {
-        return false;
+    //Docente FATTO
+    public boolean inserisciVoto(long prenotazioneId,long professoreId, long studenteId, int voto, boolean lode) throws SQLException {
+
+        if (voto < 18 || voto > 30) {
+            throw new IllegalArgumentException("Voto non valido (deve essere tra 18 e 30).");
+        }
+        if (voto < 30) {
+            lode = false; // niente lode se non è 30
+        }
+
+        String inserisciVoto = """
+                INSERT INTO esame(id_prenotazione, id_professore, voto, lode, esito)
+                SELECT ?, ?, ?, ?, 'SUPERATO'
+                FROM prenotazione
+                WHERE id_studente = ?
+                  AND id = ?
+                  AND stato = 'PRENOTATO'
+                """;
+
+        String aggiornaPrenotazione = """
+                UPDATE prenotazione
+                SET stato = 'VERBALIZZATO'
+                WHERE id = ?
+                """;
+
+        Connection cn = null;
+        try {
+            cn = GestoreDB.getConnection();
+            cn.setAutoCommit(false);
+            // PREPARED STATEMENTS
+            try (PreparedStatement ps = cn.prepareStatement(inserisciVoto);
+                 PreparedStatement ps1 = cn.prepareStatement(aggiornaPrenotazione)) {
+                // INSERT ESAME
+                ps.setLong(1, prenotazioneId);
+                ps.setLong(2, professoreId);
+                ps.setInt(3, voto);
+                ps.setBoolean(4, lode);
+                ps.setLong(5, studenteId);
+                ps.setLong(6, prenotazioneId);
+                int i = ps.executeUpdate();
+                if (i == 0) {
+                    // Nessuna prenotazione trovata / non PRENOTATO / non di quello studente
+                    cn.rollback();
+                    return false;
+                }
+                // UPDATE PRENOTAZIONE
+                ps1.setLong(1, prenotazioneId);
+                int j = ps1.executeUpdate();
+                if (j != 1) {
+                    cn.rollback();
+                    throw new SQLException("Aggiornamento prenotazione fallito (righe aggiornate: " + j + ").");
+                }
+                cn.commit();
+                System.out.println("Inserimento completato e prenotazione verbalizzata.");
+                return true;
+            }
+        } catch (SQLException e) {
+            if (cn != null) {
+                try {
+                    cn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (cn != null) {
+                try {
+                    cn.setAutoCommit(true);
+                    cn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
 
@@ -356,7 +421,7 @@ public class UniDAO {
     }
 
     // Utilizzato dal Professore, serve a settare lo stato chiuso ad un appello
-    public boolean chiudiAppello(long appelloId) throws SQLException {
+    public boolean chiudiAppello(long appelloId){
         String sql = """
                 UPDATE appello
                 SET stato = 'CHIUSO'
@@ -373,47 +438,12 @@ public class UniDAO {
                 return false;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Errore nella chiusura dell'appello",e);
         }
     }
 
     public static void main(String[] args) {
 
-        String nome = "Raul";
-        String cognome = "Petruzza";
-        String dataDiNascita = "2000/09/22";
-        String username = "raulpet";
-        String password = "pass1234";
-        Utente u = new Utente();
-
-        UniDAO ud = new UniDAO();
-        try {
-            u = ud.registrazione(nome, cognome, dataDiNascita, username, password);
-            System.out.println("Registrazione effettuata con successo, benvenuto " + u.getUsername());
-        } catch (SQLException e) {
-            System.out.println("Non ci sono riuscito");
-            e.printStackTrace();
-        }
-
-        List<Appello> ap;
-        List<Studente> lS;
-        long appelloId = 4;
-
-        try {
-            ap = ud.listaAppelliAperti();
-            for (Appello a : ap) {
-                System.out.println(a);
-            }
-
-            System.out.println("mostra gli iscritti ad un appello: ");
-            lS = ud.listIscrittiAppello(appelloId);
-            for (Studente st : lS) {
-                System.out.println(st);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 public class Libretto {
     private ArrayList<Esame> esami = new ArrayList<>();
 
-
-
     public Libretto() {}
 
     public void aggiungiEsameAlLibretto(Esame esame) {
