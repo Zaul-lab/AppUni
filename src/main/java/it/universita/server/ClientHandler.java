@@ -1,4 +1,5 @@
 package it.universita.server;
 
-public class ClientHandler {
+public class ClientHandler implements  Runnable {
+
 }
