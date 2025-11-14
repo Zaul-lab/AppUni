@@ -17,6 +17,7 @@ public class UniDAO {
     }
 
     //fatto
+    /*
     public Utente login(String nomeUtente, String password) {
         long id;
         String sql = "SELECT id, username,password_hash,ruolo FROM utente WHERE username = ?";
@@ -28,7 +29,7 @@ public class UniDAO {
                     if (BCrypt.checkpw(password, passHash)) {
                         System.out.println("login effettuato");
                         id = rs.getLong("id");
-                        Utente u = new Utente(id, nomeUtente, rs.getString("ruolo"));
+                       // Utente u = new Utente(id, nomeUtente, rs.getString("ruolo"), rs.getString("nome"),rs.getString("cognome"),rs.getTimestamp("data_registrazione").toLocalDate());
                         return u;
                     } else {
                         System.out.println("Login non riuscito");
@@ -41,7 +42,7 @@ public class UniDAO {
             throw new RuntimeException("errore nel login",e);
         }
     }
-
+*/
     //fatto
     public Utente registrazione(String nome, String cognome, String dataDiNascita, String candidato, String password) throws SQLException {
         final String sqlUtente = "INSERT INTO utente (username, password_hash, ruolo) VALUES (?,?,?)";
@@ -119,7 +120,7 @@ public class UniDAO {
                 }
             }
         }
-        return new Utente(utenteId, userEffettivo, ruolo.name());
+        return new Utente(utenteId, userEffettivo, ruolo.name(), nome, cognome, dataNascita);
     }
 
     // Appelli in lettura

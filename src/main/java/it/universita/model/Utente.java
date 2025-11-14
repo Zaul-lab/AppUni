@@ -1,22 +1,21 @@
 package it.universita.model;
 
 
+import java.time.LocalDate;
+
 public class Utente extends Persona {
     private long id;
     private String username;
     private String ruolo;
 
 
-    public Utente(long id, String username, String ruolo){
+    public Utente(long id, String username, String ruolo, String nome, String cognome, LocalDate dataNascita){
+        super(nome,cognome,dataNascita);
         this.id = id;
         this.username = username;
         this.ruolo = ruolo;
     }
 
-    public Studente creaStudente(){
-        Studente u = new Studente(this.nome,this.cognome,this.dataDiNascita,null,this.id);
-        return u;
-    }
 
     public Utente(){}
 

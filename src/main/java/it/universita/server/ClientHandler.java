@@ -1,7 +1,9 @@
 package it.universita.server;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import it.universita.config.LocalDateAdapter;
 import it.universita.db.UniDAO;
 import it.universita.model.Appello;
 import it.universita.model.Libretto;
@@ -13,7 +15,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +31,7 @@ public class ClientHandler implements Runnable {
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
         this.uniDAO = new UniDAO();
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
@@ -52,7 +56,10 @@ public class ClientHandler implements Runnable {
                 JsonObject response = handleRequest(request);
                 out.println(gson.toJson(response));
             }
-        } catch (Exception e) {
+        }catch (SocketException e){
+            System.out.println("Client disconnesso zio"+ socket.getRemoteSocketAddress());
+        }
+        catch (Exception e) {
             System.err.println("Errore nella gestione del cliente: " + socket.getRemoteSocketAddress() + ":" + e.getMessage());
             e.printStackTrace();
         } finally {
@@ -71,8 +78,8 @@ public class ClientHandler implements Runnable {
             switch (action) {
                 case "registrazione":
                     return handleRegistrazione(req);
-                case "login":
-                    return handleLogin(req);
+               /* case "login":
+                    return handleLogin(req);*/
                 case "listaAppelliAperti":
                     return handleListaAppelliAperti(req);
                 case "listaAppelliPerDocenti":
@@ -116,6 +123,7 @@ public class ClientHandler implements Runnable {
         JsonObject res = new JsonObject();
 
         Utente u = uniDAO.registrazione(nome, cognome, dataDiNascita, username, password);
+        System.out.println("SERVER - utente restituito da DAO: " + u);
         if (u == null) {
             res.addProperty("success", false);
             res.addProperty("messaggio", "Registrazione non valida");
@@ -126,7 +134,7 @@ public class ClientHandler implements Runnable {
         res.add("utente", gson.toJsonTree(u));
         return res;
     }
-
+/*
     private JsonObject handleLogin(JsonObject req) throws SQLException {
         String username = req.get("username").getAsString();
         String password = req.get("password").getAsString();
@@ -145,7 +153,7 @@ public class ClientHandler implements Runnable {
         res.add("utente", gson.toJsonTree(u));
         return res;
     }
-
+*/
     private JsonObject handleListaAppelliAperti(JsonObject req) throws SQLException {
         JsonObject res = new JsonObject();
 

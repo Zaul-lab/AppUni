@@ -1,9 +1,11 @@
 package it.universita.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import it.universita.config.LocalDateAdapter;
 import it.universita.model.*;
 
 import java.io.BufferedReader;
@@ -12,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +31,7 @@ public class ClientTCP {
     public ClientTCP(String serverAdress, int serverPort) throws IOException {
         this.serverAdress = serverAdress;
         this.serverPort = serverPort;
-        this.gson = new Gson();
+        this.gson =new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
         this.socket = new Socket(serverAdress, serverPort);
         this.out = new PrintWriter(this.socket.getOutputStream(), true);
         this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));

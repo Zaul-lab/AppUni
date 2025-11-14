@@ -6,13 +6,27 @@ import it.universita.model.Studente;
 import it.universita.model.Utente;
 
 import java.net.Socket;
+import java.util.Scanner;
 
 public class ClientMain {
-    public static void main(String[] args) throws  Exception{
+    public static void main(String[] args) throws Exception {
 
+        Scanner tastiera = new Scanner(System.in);
         Config config = ConfigSAXParser.fromXmlFile("config.xml");
         ClientTCP ctcp = new ClientTCP(config.getClientHost(), config.getClientPort());
-        Utente u = ctcp.registrazione("raul","petruzza","2000/09/22", "raulpet","1234");
 
+        System.out.println("Digita il tuo nome");
+        String nome = tastiera.nextLine();
+        System.out.println("Digita il tuo cognome");
+        String cognome = tastiera.nextLine();
+        System.out.println("Digita la tua data di nascita");
+        String dataNascita = tastiera.nextLine();
+        System.out.println("Digita l'username desiderato");
+        String username = tastiera.nextLine();
+        System.out.println("Digita la password");
+        String password = tastiera.nextLine();
+
+        Utente u = ctcp.registrazione(nome,cognome, dataNascita, username, password);
+        System.out.println(u);
     }
 }

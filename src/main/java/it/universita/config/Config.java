@@ -13,11 +13,10 @@ public class Config {
     // eventuale sezione client config
     private final String clientHost;
     private final int clientPort;
-    private final int clientTimeout;
 
     public Config(String serverHost, int serverPort,
                   String dbUrl, String dbUser, String dbPassword,
-                  String clientHost, int clientPort, int clientTimeout) {
+                  String clientHost, int clientPort) {
 
         this.serverHost = serverHost;
         this.serverPort = serverPort;
@@ -28,7 +27,6 @@ public class Config {
 
         this.clientHost = clientHost;
         this.clientPort = clientPort;
-        this.clientTimeout = clientTimeout;
     }
 
     // Getter
@@ -41,6 +39,5 @@ public class Config {
 
     public String getClientHost() { return clientHost; }
     public int getClientPort() { return clientPort; }
-    public int getClientTimeout() { return clientTimeout; }
 }
 

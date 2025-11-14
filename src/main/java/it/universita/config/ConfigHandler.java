@@ -17,7 +17,6 @@ public class ConfigHandler extends DefaultHandler {
 
     private String clientHost;
     private Integer clientPort;
-    private Integer clientTimeout;
 
     @Override
     // Questo metodo viene invocato quando SAX incontra un tag di apertura.
@@ -64,9 +63,6 @@ public class ConfigHandler extends DefaultHandler {
             case "clientPort":
                 clientPort = Integer.parseInt(text);
                 break;
-            case "timeout":
-                clientTimeout = Integer.parseInt(text);
-                break;
 
         }
 
@@ -83,7 +79,7 @@ public class ConfigHandler extends DefaultHandler {
         return new Config(
                 serverHost, serverPort,
                 dbUrl, dbUser, dbPassword,
-                clientHost, clientPort,clientTimeout
+                clientHost, clientPort
         );
     }
 }
