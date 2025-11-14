@@ -14,6 +14,7 @@ public class ServerMain {
             System.out.println("Server attivo: mi metto in ascolto");
             while (true){
                 var socket = ss.accept();
+                socket.setSoTimeout(60000);
                 System.out.println("Client connesso");
                 new Thread(new ClientHandler(socket)).start();
             }

@@ -38,6 +38,9 @@ public class ClientTCP {
         String json = gson.toJson(request);
         out.println(json);
         String response = this.in.readLine();
+        if (response == null) {
+            throw new IOException("Connessione chiusa dal server");
+        }
         return gson.fromJson(response, JsonObject.class);
     }
 
@@ -72,12 +75,12 @@ public class ClientTCP {
         return u;
     }
 
-    public Utente registrazione(String nome, String cognome, String data_nascita, String username, String password) throws IOException {
+    public Utente registrazione(String nome, String cognome, String dataDiNascita, String username, String password) throws IOException {
         JsonObject req = new JsonObject();
         req.addProperty("action", "registrazione");
         req.addProperty("nome", nome);
         req.addProperty("cognome", cognome);
-        req.addProperty("data_nascita", data_nascita);
+        req.addProperty("data_nascita", dataDiNascita);
         req.addProperty("username", username);
         req.addProperty("password", password);
         //mandiamo la richiesta al server
