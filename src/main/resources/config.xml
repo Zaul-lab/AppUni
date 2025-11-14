@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+
+    <server>
+        <host>localhost</host>
+        <port>5555</port>
+    </server>
+
+    <database>
+        <url>jdbc:mariadb://localhost:3306/appuni</url>
+        <user>root</user>
+        <password></password>
+    </database>
+
+    <client>
+        <clientHost>localhost</clientHost>
+        <clientPort>5555</clientPort>
+    </client>
+
+
+</config>

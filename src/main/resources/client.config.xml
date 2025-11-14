@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<config>
-    <host>127.0.0.1</host>
-    <porta>5555</porta>
-    <connectTimeoutMs>3000</connectTimeoutMs>
-    <readTimeoutMs>5000</readTimeoutMs>
-    <debug>true</debug>
-</config>

@@ -1,6 +1,5 @@
 package it.universita.model;
 
-import com.sun.jna.platform.win32.Netapi32Util;
 
 public class Utente extends Persona {
     private long id;
@@ -13,6 +12,12 @@ public class Utente extends Persona {
         this.username = username;
         this.ruolo = ruolo;
     }
+
+    public Studente creaStudente(){
+        Studente u = new Studente(this.nome,this.cognome,this.dataDiNascita,null,this.id);
+        return u;
+    }
+
     public Utente(){}
 
     public long getId() {

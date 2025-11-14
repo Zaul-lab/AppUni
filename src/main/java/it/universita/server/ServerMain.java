@@ -1,5 +1,7 @@
 package it.universita.server;
 
+import it.universita.config.Config;
+import it.universita.config.ConfigSAXParser;
 import it.universita.model.Utente;
 
 import java.net.ServerSocket;
@@ -9,8 +11,8 @@ public class ServerMain {
     public static void main(String[] args) {
         Utente u = new Utente();
         try{
-            ServerConfig sc = ServerConfig.fromXmlFile("server-config.xml");
-            ServerSocket ss = new ServerSocket(sc.getPorta());
+            Config config = ConfigSAXParser.fromXmlFile("config.xml");
+            ServerSocket ss = new ServerSocket(config.getServerPort());
             System.out.println("Server attivo: mi metto in ascolto");
             while (true){
                 var socket = ss.accept();
