@@ -4,18 +4,21 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Appello {
-    private long id, materiaId, docenteId;
+    private long id, materiaId;
     private LocalDateTime dataAppello;
     private String aula;
     private String stato;
+    private String materia;
+    private String professore;
 
-    public Appello(long id, long materiaId, long docenteId, LocalDateTime dataAppello, String aula, String stato) {
+    public Appello(long id, long materiaId, LocalDateTime dataAppello, String aula, String stato, String nomeMateria,String professore) {
         this.id = id;
         this.materiaId = materiaId;
-        this.docenteId = docenteId;
         this.dataAppello = dataAppello;
         this.aula = aula;
         this.stato = stato;
+        this.materia = nomeMateria;
+        this.professore = professore;
     }
 
     public long getId() {
@@ -32,14 +35,6 @@ public class Appello {
 
     public void setMateriaId(long materiaId) {
         this.materiaId = materiaId;
-    }
-
-    public long getDocenteId() {
-        return docenteId;
-    }
-
-    public void setDocenteId(long docenteId) {
-        this.docenteId = docenteId;
     }
 
     public LocalDateTime getDataAppello() {
@@ -71,10 +66,9 @@ public class Appello {
         return "Appello{" +
                 "id=" + id +
                 ", materiaId=" + materiaId +
-                ", docenteId=" + docenteId +
-                ", data=" + dataAppello +
-                ", aula=" + Objects.toString(aula, "—") +
-                ", stato=" + stato +
+                ", data= " + dataAppello +
+                ", aula= " + Objects.toString(aula, "—") +
+                ", stato= " + stato + ", nomeMateria= " + materia + ", nomeProfessore= " + professore +
                 '}';
     }
 }

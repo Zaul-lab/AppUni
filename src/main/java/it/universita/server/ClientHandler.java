@@ -4,11 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import it.universita.config.LocalDateAdapter;
+import it.universita.config.LocalDateTimeAdapter;
 import it.universita.db.UniDAO;
-import it.universita.model.Appello;
-import it.universita.model.Libretto;
-import it.universita.model.Studente;
-import it.universita.model.Utente;
+import it.universita.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +17,7 @@ import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
@@ -31,7 +30,7 @@ public class ClientHandler implements Runnable {
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
-        this.gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
+        this.gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
         this.uniDAO = new UniDAO();
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
@@ -56,10 +55,9 @@ public class ClientHandler implements Runnable {
                 JsonObject response = handleRequest(request);
                 out.println(gson.toJson(response));
             }
-        }catch (SocketException e){
-            System.out.println("Client disconnesso zio"+ socket.getRemoteSocketAddress());
-        }
-        catch (Exception e) {
+        } catch (SocketException e) {
+            System.out.println("Client disconnesso zio" + socket.getRemoteSocketAddress());
+        } catch (Exception e) {
             System.err.println("Errore nella gestione del cliente: " + socket.getRemoteSocketAddress() + ":" + e.getMessage());
             e.printStackTrace();
         } finally {
@@ -78,8 +76,8 @@ public class ClientHandler implements Runnable {
             switch (action) {
                 case "registrazione":
                     return handleRegistrazione(req);
-               /* case "login":
-                    return handleLogin(req);*/
+                case "login":
+                    return handleLogin(req);
                 case "listaAppelliAperti":
                     return handleListaAppelliAperti(req);
                 case "listaAppelliPerDocenti":
@@ -100,6 +98,8 @@ public class ClientHandler implements Runnable {
                     return handleChiudiAppello(req);
                 case "inserisciVoto":
                     return handleInserisciVoto(req);
+                case "mostraMaterieInsegnate":
+                    return handleMostraMaterieInsegnate(req);
                 default:
                     res.addProperty("success", false);
                     res.addProperty("messaggio", "Azione sconosciuta: " + action);
@@ -134,7 +134,7 @@ public class ClientHandler implements Runnable {
         res.add("utente", gson.toJsonTree(u));
         return res;
     }
-/*
+
     private JsonObject handleLogin(JsonObject req) throws SQLException {
         String username = req.get("username").getAsString();
         String password = req.get("password").getAsString();
@@ -153,36 +153,17 @@ public class ClientHandler implements Runnable {
         res.add("utente", gson.toJsonTree(u));
         return res;
     }
-*/
+
     private JsonObject handleListaAppelliAperti(JsonObject req) throws SQLException {
         JsonObject res = new JsonObject();
 
+        System.out.println("sono dentro clientHandler, lista appelli: ");
         List<Appello> appelli = uniDAO.listaAppelliAperti();
+
+        for (Appello a : appelli) System.out.println(appelli);
+
         res.addProperty("success", true);
         res.add("appelli", gson.toJsonTree(appelli));
-        return res;
-    }
-
-    private JsonObject handleListaAppelliPerDocenti(JsonObject req) throws SQLException {
-        JsonObject res = new JsonObject();
-
-        if (utenteloggato == null) {
-            res.addProperty("success", false);
-            res.addProperty("messaggio", "Devi effettuare il login");
-            return res;
-        }
-
-        if (!"PROFESSORE".equals(utenteloggato.getRuolo())) { // assumo ruolo.name()
-            res.addProperty("success", false);
-            res.addProperty("messaggio", "Solo i docenti possono visualizzare i propri appelli");
-            return res;
-        }
-
-        long docenteId = utenteloggato.getId();
-
-        List<Appello> appelli = uniDAO.listAppelliPerDocenti(docenteId);
-        res.addProperty("success", true);
-        res.add("appelliDocente", gson.toJsonTree(appelli));
         return res;
     }
 
@@ -201,11 +182,30 @@ public class ClientHandler implements Runnable {
             return res;
         }
 
-        long studenteId = utenteloggato.getId();
-
-        List<Appello> appelli = uniDAO.listAppelliPrenotatiDaStudente(studenteId);
+        List<Appello> appelli = uniDAO.listAppelliPrenotatiDaStudente(this.utenteloggato.getId());
         res.addProperty("success", true);
         res.add("appelliPrenotatiDaStudente", gson.toJsonTree(appelli));
+        return res;
+    }
+
+    private JsonObject handleListaAppelliPerDocenti(JsonObject req) throws SQLException {
+        JsonObject res = new JsonObject();
+
+        if (utenteloggato == null) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Devi effettuare il login");
+            return res;
+        }
+
+        if (!"PROFESSORE".equals(utenteloggato.getRuolo())) { // assumo ruolo.name()
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Solo i docenti possono visualizzare i propri appelli");
+            return res;
+        }
+
+        List<Appello> appelli = uniDAO.listAppelliPerDocenti(this.utenteloggato.getId());
+        res.addProperty("success", true);
+        res.add("appelliDocente", gson.toJsonTree(appelli));
         return res;
     }
 
@@ -213,9 +213,9 @@ public class ClientHandler implements Runnable {
         long appelloId = req.get("appelloId").getAsLong();
         JsonObject res = new JsonObject();
 
-        List<Studente> appelli = uniDAO.listIscrittiAppello(appelloId);
+        List<StudenteIscrittoAppello> studentiIscritti = uniDAO.listIscrittiAppello(appelloId);
         res.addProperty("success", true);
-        res.add("iscrittiAppello", gson.toJsonTree(appelli));
+        res.add("iscrittiAppello", gson.toJsonTree(studentiIscritti));
         return res;
     }
 
@@ -240,7 +240,7 @@ public class ClientHandler implements Runnable {
         long studenteId = utenteloggato.getId();
 
         // chiamo il DAO
-        boolean ok = uniDAO.prenotazioneAppello(studenteId, appelloId);
+        boolean ok = uniDAO.prenotazioneAppello(appelloId, studenteId);
 
         res.addProperty("success", ok);
         if (!ok) {
@@ -267,7 +267,7 @@ public class ClientHandler implements Runnable {
         long appelloId = req.get("appelloId").getAsLong();
         long studenteId = utenteloggato.getId();
 
-        boolean ok = uniDAO.cancellazionePrenotazioneAppello(studenteId, appelloId);
+        boolean ok = uniDAO.cancellazionePrenotazioneAppello(appelloId, studenteId);
         res.addProperty("success", ok);
         if (!ok) {
             res.addProperty("messaggio", "Cancellazione non effettuata");
@@ -275,7 +275,7 @@ public class ClientHandler implements Runnable {
         return res;
     }
 
-    private JsonObject handleMostraLibretto (JsonObject req) throws SQLException {
+    private JsonObject handleMostraLibretto(JsonObject req) throws SQLException {
         JsonObject res = new JsonObject();
 
         // 1) controllo login
@@ -328,10 +328,9 @@ public class ClientHandler implements Runnable {
         String dataEsame = req.get("dataEsame").getAsString();
         String aula = req.get("aula").getAsString();
 
-        long professoreId = utenteloggato.getId();
         LocalDateTime dataEsameLocalDateTime = LocalDateTime.parse(dataEsame);
 
-        boolean ok = uniDAO.creaAppello(materiaId, professoreId, dataEsameLocalDateTime, aula);
+        boolean ok = uniDAO.creaAppello(materiaId, dataEsameLocalDateTime, aula);
         res.addProperty("success", ok);
         if (!ok) {
             res.addProperty("messaggio", "Creazione appello non riuscita");
@@ -365,6 +364,7 @@ public class ClientHandler implements Runnable {
     }
 
     private JsonObject handleInserisciVoto(JsonObject req) throws SQLException {
+
         JsonObject res = new JsonObject();
 
         if (utenteloggato == null) {
@@ -373,7 +373,7 @@ public class ClientHandler implements Runnable {
             return res;
         }
 
-        if (!"PROFESSORE".equals(utenteloggato.getRuolo())) {
+        if (!"PROFESSORE".equals(this.utenteloggato.getRuolo())) {
             res.addProperty("success", false);
             res.addProperty("messaggio", "Solo i docenti possono inserire voti");
             return res;
@@ -381,11 +381,10 @@ public class ClientHandler implements Runnable {
 
         long prenotazioneId = req.get("prenotazioneId").getAsLong();
         long studenteId = req.get("studenteId").getAsLong();
-        long professoreId = utenteloggato.getId();
         int voto = req.get("voto").getAsInt();
         boolean lode = req.get("lode").getAsBoolean();
 
-        boolean ok = uniDAO.inserisciVoto(prenotazioneId, professoreId, studenteId, voto, lode);
+        boolean ok = uniDAO.inserisciVoto(prenotazioneId, this.utenteloggato.getId(), studenteId, voto, lode);
 
         res.addProperty("success", ok);
         if (!ok) {
@@ -393,4 +392,33 @@ public class ClientHandler implements Runnable {
         }
         return res;
     }
+
+    private JsonObject handleMostraMaterieInsegnate(JsonObject req) throws SQLException{
+        JsonObject res = new JsonObject();
+
+        if (utenteloggato == null) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Devi effettuare il login");
+            return res;
+        }
+
+        if (!"PROFESSORE".equals(this.utenteloggato.getRuolo())) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Solo i docenti possono vedere le materie insegnate");
+            return res;
+        }
+
+        List<Materia> materie = uniDAO.mostraMaterieInsegnate(this.utenteloggato.getId());
+
+        if (materie.isEmpty()) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Materie non trovate");
+            return res;
+        }
+
+        res.addProperty("success", true);
+        res.add("materie", gson.toJsonTree(materie));
+        return res;
+    }
+
 }

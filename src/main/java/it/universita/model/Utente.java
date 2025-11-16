@@ -30,4 +30,13 @@ public class Utente extends Persona {
     public String getRuolo() {
         return ruolo;
     }
+
+    @Override
+    public String toString() {
+        return "Utente{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", ruolo='" + ruolo + '\'' +
+                '}';
+    }
 }

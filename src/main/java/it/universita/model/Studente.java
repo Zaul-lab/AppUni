@@ -17,6 +17,9 @@ public class Studente extends Persona {
         return this.matricola;
     }
 
+    public long getId() {
+        return id;
+    }
     @Override
     public String toString() {
         return "Nome: " + super.getNome() +" Cognome: " + super.getCognome() +" Data di nascita: " + super.getDataDiNascita() +

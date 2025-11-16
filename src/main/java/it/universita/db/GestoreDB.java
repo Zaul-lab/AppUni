@@ -28,7 +28,7 @@ public final class GestoreDB {
         return DriverManager.getConnection(URL, USER, PASS); // usa i valori del config
     }
 
-
+/*
     public void test() {
         String sql = "SELECT 1";
         try (Connection cn = getConnection();
@@ -46,4 +46,6 @@ public final class GestoreDB {
         GestoreDB gdb = new GestoreDB();
         gdb.test();
     }
+*/
 }
+

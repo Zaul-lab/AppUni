@@ -14,4 +14,11 @@ public class Libretto {
     public ArrayList<Esame> getEsami() {
         return esami;
     }
+
+    @Override
+    public String toString() {
+        return "Libretto{" +
+                "esami=" + esami +
+                '}';
+    }
 }

@@ -1,22 +1,22 @@
 package it.universita.model;
 
 public class Materia {
-    private long id;
-    private long id_corso;
+    private long id,id_corso,id_professore;
     private String nome;
     private int cfu;
     private int anno;
-    private int semestre;
+    private String semestre;
 
 public Materia(){}
 
-    public Materia (long id, long id_corso, String nome, int cfu, int anno) {
+    public Materia (long id, long id_corso, String nome, int cfu, int anno,String semestre, long id_professore) {
         this.id = id;
         this.id_corso = id_corso;
         this.nome = nome;
         this.cfu = cfu;
         this.anno = anno;
-        this.semestre = 0;
+        this.semestre = semestre;
+        this.id_professore = id_professore;
     }
 
     public long getId() {
@@ -56,11 +56,11 @@ public Materia(){}
     public void setAnno(int anno) {
         this.anno = anno;
     }
-    public int getSemestre() {
+    public String getSemestre() {
         return semestre;
     }
 
-    public void setSemestre(int semestre) {
+    public void setSemestre(String semestre) {
         this.semestre = semestre;
     }
     @Override

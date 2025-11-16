@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import it.universita.config.LocalDateAdapter;
+import it.universita.config.LocalDateTimeAdapter;
 import it.universita.model.*;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class ClientTCP {
     public ClientTCP(String serverAdress, int serverPort) throws IOException {
         this.serverAdress = serverAdress;
         this.serverPort = serverPort;
-        this.gson =new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).create();
+        this.gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter()).registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
         this.socket = new Socket(serverAdress, serverPort);
         this.out = new PrintWriter(this.socket.getOutputStream(), true);
         this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
@@ -182,11 +183,11 @@ public class ClientTCP {
             throw new IOException("Risposta server non valida");
         }
         Type listType = new TypeToken<List<Appello>>(){}.getType();
-        List<Appello> listaAppelliPrenotatiDaStudente = gson.fromJson(appelliPrenotatiDaStudente, listType);
-        return  listaAppelliPrenotatiDaStudente;
+        List<Appello> AppelliPrenotatiDaStudente = gson.fromJson(appelliPrenotatiDaStudente, listType);
+        return  AppelliPrenotatiDaStudente;
     }
 
-    public List<Studente> listIscrittiAppello(long appelloId) throws IOException {
+    public List<StudenteIscrittoAppello> listIscrittiAppello(long appelloId) throws IOException {
         JsonObject req = new JsonObject();
         req.addProperty("action", "listIscrittiAppello");
         req.addProperty("appelloId", appelloId);
@@ -206,8 +207,8 @@ public class ClientTCP {
         if (listaIscritti == null) {
             throw new IOException("Risposta server non valida");
         }
-        Type listType = new TypeToken<List<Studente>>(){}.getType();
-        List<Studente> listaIscrittiAppello  = gson.fromJson(listaIscritti, listType);
+        Type listType = new TypeToken<List<StudenteIscrittoAppello>>(){}.getType();
+        List<StudenteIscrittoAppello> listaIscrittiAppello  = gson.fromJson(listaIscritti, listType);
         return listaIscrittiAppello;
     }
 
@@ -344,4 +345,32 @@ public class ClientTCP {
         }
         return true;
     }
+
+    public List<Materia> mostraMaterieInsegnate() throws IOException{
+        JsonObject req = new JsonObject();
+        req.addProperty("action", "mostraMaterieInsegnate");
+        JsonObject res = sendRequest(req);
+        boolean success = res.get("success").getAsBoolean();
+        if (!success) {
+
+            //leggiamo messaggio di errore e lo gestiamo
+            if (res.has("messaggio")) {
+                String messaggio = res.get("messaggio").getAsString();
+                System.out.println("Impossibile visualizzare gli Appelli: " + messaggio);
+            } else {
+                System.out.println("Impossibile visualizzare gli Appelli(errore sconosciuto)");
+            }
+        return null;
+        }
+        JsonArray materiej = res.getAsJsonArray("materie");
+        if (materiej == null) {
+            //se ci sono errori lato server:
+            throw new IOException("Risposta server non valida");
+        }
+
+        Type listType = new TypeToken<List<Materia>>(){}.getType();
+        List<Materia> materie  = gson.fromJson(materiej, listType);
+        return materie;
+    }
+
 }

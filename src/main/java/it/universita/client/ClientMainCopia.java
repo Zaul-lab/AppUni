@@ -2,13 +2,15 @@ package it.universita.client;
 
 import it.universita.config.Config;
 import it.universita.config.ConfigSAXParser;
-
+import it.universita.model.Studente;
 import it.universita.model.Utente;
 
+import java.net.Socket;
 import java.util.Scanner;
 
-public class ClientMain {
+public class ClientMainCopia {
     public static void main(String[] args) throws Exception {
+
 
         Scanner tastiera = new Scanner(System.in);
         Config config = ConfigSAXParser.fromXmlFile("config.xml");
