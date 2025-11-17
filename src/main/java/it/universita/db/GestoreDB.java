@@ -28,24 +28,5 @@ public final class GestoreDB {
         return DriverManager.getConnection(URL, USER, PASS); // usa i valori del config
     }
 
-/*
-    public void test() {
-        String sql = "SELECT 1";
-        try (Connection cn = getConnection();
-             Statement st = cn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            rs.next();
-            System.out.println("DB OK: " + rs.getInt(1));
-        } catch (SQLException e) {
-            System.out.println("SQLException");
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        GestoreDB gdb = new GestoreDB();
-        gdb.test();
-    }
-*/
 }
 

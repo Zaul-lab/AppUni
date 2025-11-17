@@ -106,6 +106,19 @@ public class ClientHandler implements Runnable {
                     return res;
             }
 
+        } catch (SQLException e) {
+            // Errore di database
+            e.printStackTrace(); // ok tenerlo qui
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Errore di database. Riprova più tardi.");
+            return res;
+
+        } catch (IllegalArgumentException e) {
+            // Parametri mancanti / sbagliati
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Richiesta non valida: " + e.getMessage());
+            return res;
+
         } catch (Exception e) {
             e.printStackTrace();
             res.addProperty("success", false);
@@ -124,12 +137,8 @@ public class ClientHandler implements Runnable {
 
         Utente u = uniDAO.registrazione(nome, cognome, dataDiNascita, username, password);
         this.utenteloggato = u;
-        System.out.println("SERVER - utente restituito da DAO: " + u);
-        if (u == null) {
-            res.addProperty("success", false);
-            res.addProperty("messaggio", "Registrazione non valida");
-            return res;
-        }
+        System.out.println("SERVER - utente restituito da DAO: " + u);//log per debug
+
         res.addProperty("success", true);
         res.addProperty("messaggio", "Registrazione con successo");
         res.add("utente", gson.toJsonTree(u));
@@ -145,7 +154,7 @@ public class ClientHandler implements Runnable {
 
         if (u == null) {
             res.addProperty("success", false);
-            res.addProperty("messaggio", "Impossibile accedere come: " + username);
+            res.addProperty("messaggio", "Credenziali errate : Utente o password errati");
             return res;
         }
 
@@ -158,10 +167,9 @@ public class ClientHandler implements Runnable {
     private JsonObject handleListaAppelliAperti(JsonObject req) throws SQLException {
         JsonObject res = new JsonObject();
 
-        System.out.println("sono dentro clientHandler, lista appelli: ");
         List<Appello> appelli = uniDAO.listaAppelliAperti(this.utenteloggato.getId());
 
-        for (Appello a : appelli) System.out.println(appelli);
+        //for (Appello a : appelli) System.out.println(a);
 
         res.addProperty("success", true);
         res.add("appelli", gson.toJsonTree(appelli));
@@ -185,7 +193,7 @@ public class ClientHandler implements Runnable {
 
         List<Appello> appelli = uniDAO.listAppelliPrenotatiDaStudente(this.utenteloggato.getId());
         res.addProperty("success", true);
-        res.add("appelliPrenotatiDaStudente", gson.toJsonTree(appelli));
+        res.add("appelli", gson.toJsonTree(appelli));
         return res;
     }
 
@@ -206,13 +214,25 @@ public class ClientHandler implements Runnable {
 
         List<Appello> appelli = uniDAO.listAppelliPerDocenti(this.utenteloggato.getId());
         res.addProperty("success", true);
-        res.add("appelliDocente", gson.toJsonTree(appelli));
+        res.add("appelli", gson.toJsonTree(appelli));
         return res;
     }
 
     private JsonObject handleListIscrittiAppello(JsonObject req) throws SQLException {
+       JsonObject res = new JsonObject();
+        if (this.utenteloggato == null) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Devi effettuare il login");
+            return res;
+        }
+
+        if (!"PROFESSORE".equals(utenteloggato.getRuolo())) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Solo i docenti possono visualizzare gli iscritti");
+            return res;
+        }
         long appelloId = req.get("appelloId").getAsLong();
-        JsonObject res = new JsonObject();
+
 
         List<StudenteIscrittoAppello> studentiIscritti = uniDAO.listIscrittiAppello(appelloId);
         res.addProperty("success", true);
@@ -394,7 +414,7 @@ public class ClientHandler implements Runnable {
         return res;
     }
 
-    private JsonObject handleMostraMaterieInsegnate(JsonObject req) throws SQLException{
+    private JsonObject handleMostraMaterieInsegnate(JsonObject req) throws SQLException {
         JsonObject res = new JsonObject();
 
         if (utenteloggato == null) {
