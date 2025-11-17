@@ -319,10 +319,9 @@ public class ClientHandler implements Runnable {
         // 4) chiamo il DAO
         Libretto libretto = uniDAO.mostraLibretto(studenteId);
 
-        if (libretto == null) {
-            res.addProperty("success", false);
-            res.addProperty("messaggio", "Libretto non trovato");
-            return res;
+        // se non ci sono esami
+        if (libretto.getEsami().isEmpty()) {
+            res.addProperty("messaggio", "Nessun esame registrato");
         }
 
         res.addProperty("success", true);
@@ -349,9 +348,29 @@ public class ClientHandler implements Runnable {
         String dataEsame = req.get("dataEsame").getAsString();
         String aula = req.get("aula").getAsString();
 
-        LocalDateTime dataEsameLocalDateTime = LocalDateTime.parse(dataEsame);
+        // Validazione aula
+        if (aula == null || aula.isBlank()) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "L'aula non può essere vuota.");
+            return res;
+        }
+        //parsing e validazione data
+        LocalDateTime dataEsameStr;
+        try {
+            dataEsameStr = LocalDateTime.parse(dataEsame);
+        } catch (Exception e) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Formato data non valido. Usa es. 2025-01-20T09:00.");
+            return res;
+        }
+        if (dataEsameStr.isBefore(LocalDateTime.now())) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "La data dell'esame non può essere nel passato.");
+            return res;
+        }
+        //se siamo arrivati qui, i parametri sono validi -> chiamo DAO
+        boolean ok = uniDAO.creaAppello(materiaId, dataEsameStr, aula);
 
-        boolean ok = uniDAO.creaAppello(materiaId, dataEsameLocalDateTime, aula);
         res.addProperty("success", ok);
         if (!ok) {
             res.addProperty("messaggio", "Creazione appello non riuscita");
@@ -405,6 +424,13 @@ public class ClientHandler implements Runnable {
         int voto = req.get("voto").getAsInt();
         boolean lode = req.get("lode").getAsBoolean();
 
+        // Validazione input (errore di dominio, non tecnico)
+        if (voto < 18 || voto > 31) {
+            res.addProperty("success", false);
+            res.addProperty("messaggio", "Voto non valido (deve essere tra 18 e 30, oppure 31 per 30 e lode).");
+            return res;
+        }
+
         boolean ok = uniDAO.inserisciVoto(prenotazioneId, this.utenteloggato.getId(), studenteId, voto, lode);
 
         res.addProperty("success", ok);
@@ -430,14 +456,13 @@ public class ClientHandler implements Runnable {
         }
 
         List<Materia> materie = uniDAO.mostraMaterieInsegnate(this.utenteloggato.getId());
+        res.addProperty("success", true);
 
         if (materie.isEmpty()) {
-            res.addProperty("success", false);
+            //non trattiamo nessuna materia come errore, al massimo non ne ha il docente:
             res.addProperty("messaggio", "Materie non trovate");
             return res;
         }
-
-        res.addProperty("success", true);
         res.add("materie", gson.toJsonTree(materie));
         return res;
     }

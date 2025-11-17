@@ -247,7 +247,7 @@ public class UniDAO {
         return appelliDocenti;
     }
 
-    public List<Materia> mostraMaterieInsegnate(long docenteId) {
+    public List<Materia> mostraMaterieInsegnate(long docenteId) throws SQLException {
         ArrayList<Materia> materie = new ArrayList<>();
 
         String sql = """
@@ -264,11 +264,7 @@ public class UniDAO {
             }
 
             return materie;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return materie;
         }
-
     }
 
     //fatto
@@ -425,7 +421,7 @@ public class UniDAO {
     }
 
     //Libretto-esiti
-    public Libretto mostraLibretto(long idStudente) {
+    public Libretto mostraLibretto(long idStudente) throws SQLException {
         String sql =
                 "SELECT e.id AS id_esame, e.id_prenotazione, e.id_professore, " +
                         "CONCAT(pf.nome,' ',pf.cognome) AS docente, m.nome AS materia, " +
@@ -459,8 +455,6 @@ public class UniDAO {
                 }
                 return libretto;
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore mostraLibretto", e);
         }
     }
 
@@ -468,39 +462,35 @@ public class UniDAO {
     public boolean inserisciVoto(long prenotazioneId, long professoreId, long studenteId, int voto, boolean lode) throws SQLException {
 
         int votoFinale = voto;
-        if (voto < 18 || voto > 31) {
-            throw new IllegalArgumentException("Voto non valido (deve essere tra 18 e 30).");
-        }
         if (voto < 30) {
-            lode = false; // niente lode se non è 30
+            lode = false; // niente lode se non è 30/31
         }
         if (voto == 31) {
             lode = true;
-            votoFinale = 30;
+            votoFinale = 30; // salvi 30 e lode
         }
 
         String inserisciVoto = """
-                INSERT INTO esame(id_prenotazione, id_professore, voto, lode, esito)
-                SELECT ?, ?, ?, ?, 'SUPERATO'
-                FROM prenotazione
-                WHERE id_studente = ?
-                  AND id = ?
-                  AND stato = 'PRENOTATO'
-                """;
+            INSERT INTO esame(id_prenotazione, id_professore, voto, lode, esito)
+            SELECT ?, ?, ?, ?, 'SUPERATO'
+            FROM prenotazione
+            WHERE id_studente = ?
+              AND id = ?
+              AND stato = 'PRENOTATO'
+            """;
 
         String aggiornaPrenotazione = """
-                UPDATE prenotazione
-                SET stato = 'VERBALIZZATO'
-                WHERE id = ?
-                """;
+            UPDATE prenotazione
+            SET stato = 'VERBALIZZATO'
+            WHERE id = ?
+            """;
 
-        Connection cn = null;
-        try {
-            cn = GestoreDB.getConnection();
+        try (Connection cn = GestoreDB.getConnection()) {
             cn.setAutoCommit(false);
-            // PREPARED STATEMENTS
+
             try (PreparedStatement ps = cn.prepareStatement(inserisciVoto);
                  PreparedStatement ps1 = cn.prepareStatement(aggiornaPrenotazione)) {
+
                 // INSERT ESAME
                 ps.setLong(1, prenotazioneId);
                 ps.setLong(2, professoreId);
@@ -508,12 +498,14 @@ public class UniDAO {
                 ps.setBoolean(4, lode);
                 ps.setLong(5, studenteId);
                 ps.setLong(6, prenotazioneId);
+
                 int i = ps.executeUpdate();
                 if (i == 0) {
                     // Nessuna prenotazione trovata / non PRENOTATO / non di quello studente
                     cn.rollback();
-                    return false;
+                    return false; // esito LOGICO: non puoi inserire il voto
                 }
+
                 // UPDATE PRENOTAZIONE
                 ps1.setLong(1, prenotazioneId);
                 int j = ps1.executeUpdate();
@@ -521,39 +513,29 @@ public class UniDAO {
                     cn.rollback();
                     throw new SQLException("Aggiornamento prenotazione fallito (righe aggiornate: " + j + ").");
                 }
+
                 cn.commit();
-                System.out.println("Inserimento completato e prenotazione verbalizzata.");
                 return true;
-            }
-        } catch (SQLException e) {
-            if (cn != null) {
+
+            } catch (SQLException e) {
                 try {
                     cn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
+                } catch (SQLException sup) {
+                    e.addSuppressed(sup);
                 }
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (cn != null) {
+                throw e;
+
+            } finally {
                 try {
                     cn.setAutoCommit(true);
-                    cn.close();
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    // lo ignoriamo
                 }
             }
         }
     }
 
     public boolean creaAppello(long materiaId, LocalDateTime dataEsame, String aula) throws SQLException {
-        if (dataEsame == null || aula == null || aula.isBlank()) {
-            throw new IllegalArgumentException("Parametri non validi.");
-        }
-        if (dataEsame.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("La data dell'esame non può essere nel passato.");
-        }
         final String sql = "INSERT INTO appello (id_materia, data_esame, aula) VALUES (?,?,?)";
 
         try (Connection cn = GestoreDB.getConnection();
@@ -575,7 +557,7 @@ public class UniDAO {
     }
 
     // Utilizzato dal Professore, serve a settare lo stato chiuso ad un appello
-    public boolean chiudiAppello(long appelloId) {
+    public boolean chiudiAppello(long appelloId) throws SQLException {
         String sql = """
                 UPDATE appello
                 SET stato = 'CHIUSO'
@@ -586,14 +568,10 @@ public class UniDAO {
              PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setLong(1, appelloId);
             if (ps.executeUpdate() == 1) {
-                System.out.println("Appello chiuso");
                 return true;
             } else {
-                System.out.println("Chiusura non effettuata");
                 return false;
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore nella chiusura dell'appello", e);
         }
     }
 
