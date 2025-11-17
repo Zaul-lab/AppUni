@@ -2,12 +2,11 @@ package it.universita.client;
 
 import it.universita.config.Config;
 import it.universita.config.ConfigSAXParser;
-
 import it.universita.model.Utente;
 
 import java.util.Scanner;
 
-public class ClientMain {
+public class ClientMainCopia1 {
     public static void main(String[] args) throws Exception {
 
         Scanner tastiera = new Scanner(System.in);

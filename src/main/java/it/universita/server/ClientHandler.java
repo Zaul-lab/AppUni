@@ -123,6 +123,7 @@ public class ClientHandler implements Runnable {
         JsonObject res = new JsonObject();
 
         Utente u = uniDAO.registrazione(nome, cognome, dataDiNascita, username, password);
+        this.utenteloggato = u;
         System.out.println("SERVER - utente restituito da DAO: " + u);
         if (u == null) {
             res.addProperty("success", false);
@@ -158,7 +159,7 @@ public class ClientHandler implements Runnable {
         JsonObject res = new JsonObject();
 
         System.out.println("sono dentro clientHandler, lista appelli: ");
-        List<Appello> appelli = uniDAO.listaAppelliAperti();
+        List<Appello> appelli = uniDAO.listaAppelliAperti(this.utenteloggato.getId());
 
         for (Appello a : appelli) System.out.println(appelli);
 
