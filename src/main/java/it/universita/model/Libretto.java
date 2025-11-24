@@ -3,9 +3,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Libretto {
-    private ArrayList<Esame> esami = new ArrayList<>();
+    private ArrayList<Esame> esami;
 
-    public Libretto() {}
+    public Libretto() {
+        this.esami =  new ArrayList<>();
+    }
 
     public void aggiungiEsameAlLibretto(Esame esame) {
         esami.add(esame);

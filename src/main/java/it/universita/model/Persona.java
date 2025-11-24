@@ -11,7 +11,7 @@ public abstract class Persona {
 
     public Persona(){}
 
-    public Persona(String nome, String cognome, LocalDate dataDiNascita) {
+    protected Persona(String nome, String cognome, LocalDate dataDiNascita) {
         if (nome == null) throw new IllegalArgumentException("nome vuoto");
         if (cognome == null) throw new IllegalArgumentException("cognome vuoto");
         if (dataDiNascita == null) throw new IllegalArgumentException("data nulla");

@@ -59,14 +59,14 @@ public class Menu {
                                         System.out.println("Prenotazione effettuata!");
 
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    System.out.println(e.getMessage());
                                 }
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        System.out.println(e.getMessage());
                     }
                 }
                 case "2" -> {
@@ -89,12 +89,12 @@ public class Menu {
                                     if (this.clientTCP.cancellazionePrenotazioneAppello(idAppello, this.idUtente))
                                         System.out.println("Cancellazione effettuata!");
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    System.out.println(e.getMessage());
                                 }
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                 }
                 case "3" -> {
@@ -108,13 +108,13 @@ public class Menu {
                             }
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        System.out.println(e.getMessage());
                     }
                 }
                 case "4" -> {
                     return;
                 }
-                default -> System.out.println("Riprova a digitare meglio, hai le mani enormi");
+                default -> System.out.println("Riprova a digitare meglio");
             }
         }
     }
@@ -154,7 +154,7 @@ public class Menu {
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                 }
                 case "2" -> {
@@ -182,7 +182,7 @@ public class Menu {
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                 }
                 case "3" -> {
@@ -244,7 +244,7 @@ public class Menu {
                         }
 
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                 }
                 default -> System.exit(0);

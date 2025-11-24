@@ -25,40 +25,20 @@ public class Appello {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public long getMateriaId() {
         return materiaId;
-    }
-
-    public void setMateriaId(long materiaId) {
-        this.materiaId = materiaId;
     }
 
     public LocalDateTime getDataAppello() {
         return dataAppello;
     }
 
-    public void setDataAppello(LocalDateTime dataAppello) {
-        this.dataAppello = dataAppello;
-    }
-
     public String getAula() {
         return aula;
     }
 
-    public void setAula(String aula) {
-        this.aula = aula;
-    }
-
     public String getStato() {
         return stato;
-    }
-
-    public void setStato(String stato) {
-        this.stato = stato;
     }
 
     @Override

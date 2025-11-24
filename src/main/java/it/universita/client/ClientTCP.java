@@ -180,7 +180,7 @@ public class ClientTCP {
         }
         JsonArray appelliPrenotatiDaStudente = res.getAsJsonArray("appelliPrenotatiDaStudente");
         if (appelliPrenotatiDaStudente == null) {
-            throw new IOException("Risposta server non valida");
+            throw new IOException("Non ci sono appelli aperti");
         }
         Type listType = new TypeToken<List<Appello>>(){}.getType();
         List<Appello> AppelliPrenotatiDaStudente = gson.fromJson(appelliPrenotatiDaStudente, listType);
@@ -205,7 +205,7 @@ public class ClientTCP {
         }
         JsonArray listaIscritti  = res.getAsJsonArray("iscrittiAppello");
         if (listaIscritti == null) {
-            throw new IOException("Risposta server non valida");
+            throw new IOException("Non ci sono iscritti all'appello");
         }
         Type listType = new TypeToken<List<StudenteIscrittoAppello>>(){}.getType();
         List<StudenteIscrittoAppello> listaIscrittiAppello  = gson.fromJson(listaIscritti, listType);
@@ -365,7 +365,7 @@ public class ClientTCP {
         JsonArray materiej = res.getAsJsonArray("materie");
         if (materiej == null) {
             //se ci sono errori lato server:
-            throw new IOException("Risposta server non valida");
+            throw new IOException("Non ci sono materie insegnate");
         }
 
         Type listType = new TypeToken<List<Materia>>(){}.getType();

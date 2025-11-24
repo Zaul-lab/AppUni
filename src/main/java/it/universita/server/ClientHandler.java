@@ -17,7 +17,6 @@ import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
@@ -56,7 +55,7 @@ public class ClientHandler implements Runnable {
                 out.println(gson.toJson(response));
             }
         } catch (SocketException e) {
-            System.out.println("Client disconnesso zio" + socket.getRemoteSocketAddress());
+            System.out.println("Client disconnesso " + socket.getRemoteSocketAddress());
         } catch (Exception e) {
             System.err.println("Errore nella gestione del cliente: " + socket.getRemoteSocketAddress() + ":" + e.getMessage());
             e.printStackTrace();
@@ -169,8 +168,6 @@ public class ClientHandler implements Runnable {
 
         List<Appello> appelli = uniDAO.listaAppelliAperti(this.utenteloggato.getId());
 
-        //for (Appello a : appelli) System.out.println(a);
-
         res.addProperty("success", true);
         res.add("appelli", gson.toJsonTree(appelli));
         return res;
@@ -214,7 +211,7 @@ public class ClientHandler implements Runnable {
 
         List<Appello> appelli = uniDAO.listAppelliPerDocenti(this.utenteloggato.getId());
         res.addProperty("success", true);
-        res.add("appelli", gson.toJsonTree(appelli));
+        res.add("appelliDocente", gson.toJsonTree(appelli));
         return res;
     }
 

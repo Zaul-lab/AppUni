@@ -20,40 +20,20 @@ public long getId() {
     return id;
 }
 
-public void setId(long id) {
-        this.id = id;
-}
-
 public String getNome() {
     return nome;
-}
-
-public void setNome(String nome) {
-    this.nome = nome;
 }
 
 public String getCodice() {
     return codice;
 }
 
-public void setCodice(String codice) {
-    this.codice = codice;
-}
-
 public int getCfu() {
     return cfu;
 }
 
-public void setCfu(int cfu) {
-    this.cfu = cfu;
-}
-
 public long getIdProfessore() {
     return idProfessore;
-}
-
-public void setIdProfessore(long idProfessore) {
-    this.idProfessore = idProfessore;
 }
 
 @Override

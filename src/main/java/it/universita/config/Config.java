@@ -30,14 +30,32 @@ public class Config {
     }
 
     // Getter
-    public String getServerHost() { return serverHost; }
-    public int getServerPort() { return serverPort; }
+    public String getServerHost() {
+        return serverHost;
+    }
 
-    public String getDbUrl() { return dbUrl; }
-    public String getDbUser() { return dbUser; }
-    public String getDbPassword() { return dbPassword; }
+    public int getServerPort() {
+        return serverPort;
+    }
 
-    public String getClientHost() { return clientHost; }
-    public int getClientPort() { return clientPort; }
+    public String getDbUrl() {
+        return dbUrl;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public String getClientHost() {
+        return clientHost;
+    }
+
+    public int getClientPort() {
+        return clientPort;
+    }
 }
 

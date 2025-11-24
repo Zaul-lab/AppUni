@@ -24,60 +24,40 @@ public class Esame {
         this.lode = lode;
         this.dataRegistrazione = dataRegistrazione;
     }
+
     public long getIdEsame() {
         return idEsame;
     }
-    public void setIdEsame(long idEsame) {
-        this.idEsame = idEsame;
-    }
+
     public long getIdPrenotazione() {
         return idPrenotazione;
     }
-    public void setIdPrenotazione(long idPrenotazione) {
-        this.idPrenotazione = idPrenotazione;
-    }
+
     public String getDocente() {
         return docente;
     }
-    public void setDocente(String docente) {
-        this.docente = docente;
-    }
+
     public long getIdProfessore() {
         return idProfessore;
     }
 
-    public void setIdProfessore(long idProfessore) {
-        this.idProfessore = idProfessore;
-    }
     public String getMateria() {
         return materia;
     }
-    public void setMateria(String materia) {
-        this.materia = materia;
-    }
+
     public String getEsito() {
         return esito;
-    }
-    public void setEsito(String esito) {
-        this.esito = esito;
     }
     public Integer getVoto() {
         return voto;
     }
-    public void setVoto(Integer voto) {
-        this.voto = voto;
-    }
+
     public boolean isLode() {
         return lode;
     }
-    public void setLode(boolean lode) {
-        this.lode = lode;
-    }
+
     public LocalDateTime getDataRegistrazione() {
         return dataRegistrazione;
-    }
-    public void setDataRegistrazione(LocalDateTime dataRegistrazione) {
-        this.dataRegistrazione = dataRegistrazione;
     }
 
     @Override

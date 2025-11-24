@@ -441,16 +441,10 @@ public class UniDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 Libretto libretto = new Libretto();
                 while (rs.next()) {
-                    Esame e = new Esame();
-                    e.setIdEsame(rs.getLong("id_esame"));
-                    e.setIdPrenotazione(rs.getLong("id_prenotazione"));
-                    e.setIdProfessore(rs.getLong("id_professore"));
-                    e.setDocente(rs.getString("docente"));
-                    e.setMateria(rs.getString("materia"));
-                    e.setVoto(rs.getInt("voto"));
-                    e.setLode(rs.getBoolean("lode"));
-                    e.setEsito(rs.getString("esito"));
-                    e.setDataRegistrazione(rs.getTimestamp("data_registrazione").toLocalDateTime());
+                    Esame e = new Esame(rs.getLong("id_esame"),rs.getLong("id_prenotazione"),rs.getLong("id_professore"),
+                            rs.getString("docente"),rs.getString("materia"),rs.getString("esito"), rs.getInt("voto"),
+                            rs.getBoolean("lode"), rs.getTimestamp("data_registrazione").toLocalDateTime());
+
                     libretto.aggiungiEsameAlLibretto(e);
                 }
                 return libretto;
@@ -575,7 +569,5 @@ public class UniDAO {
         }
     }
 
-    public static void main(String[] args) {
-    }
 
 }
